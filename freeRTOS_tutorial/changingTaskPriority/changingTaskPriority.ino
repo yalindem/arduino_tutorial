@@ -12,6 +12,7 @@ TaskProfiler GreenLEDProfiler;
 
 TaskHandle_t red_Handle, yellow_Handle, green_Handle;
 
+u_int32_t suspend_monitor;
 
 void setup()
 {
@@ -28,9 +29,9 @@ void redLEDController(void *pvParameters)
   while(1)
   {
     digitalWrite(RED,HIGH);
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(500));
     digitalWrite(RED,LOW);
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(500));
     const UBaseType_t taskPrio = uxTaskPriorityGet(red_Handle);
     Serial.print("RED TASK PRIO: ");
     Serial.println(taskPrio);
@@ -45,10 +46,16 @@ void yellowLEDController(void *pvParameters)
   {
     digitalWrite(YELLOW, !digitalRead(YELLOW));
     vTaskPrioritySet(yellow_Handle, 2);
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(500));
     const UBaseType_t taskPrio = uxTaskPriorityGet(yellow_Handle);
     Serial.print("YELLOW TASK PRIO: ");
     Serial.println(taskPrio);
+    Serial.print("suspend_monitor: ");
+    Serial.println(suspend_monitor);
+    if (suspend_monitor>50)
+    {
+      vTaskSuspend(yellow_Handle);
+    }
   }
 }
 
@@ -58,7 +65,8 @@ void greenLEDController(void *pvParameters)
   while(1)
   {
     digitalWrite(GREEN, !digitalRead(GREEN));
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    suspend_monitor++;
+    vTaskDelay(pdMS_TO_TICKS(500));
   }
 }
 
